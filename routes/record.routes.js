@@ -4,7 +4,8 @@ const router = express.Router();
 const joi = require("joi");
 
 // Import record controller
-const { getRecords } = require("../controllers/record.controller");
+const { getRecordsWithFilters } = require("../controllers/record.controller");
+const { APIerror } = require("../helpers/api-response");
 
 const getRecordsSchema = joi.object({
   startDate: joi.date().required(),
@@ -18,10 +19,7 @@ router.post("/", async (req, res) => {
   const { error } = getRecordsSchema.validate(req.body);
 
   if (error) {
-    return res.send({
-      code: 400,
-      msg: `Bad Request: ${error.message}`,
-    });
+    return res.send(APIerror(400, `Bad Request: ${error.message}`));
   }
 
   const startDate = req.body.startDate;
@@ -29,7 +27,7 @@ router.post("/", async (req, res) => {
   const minCount = req.body.minCount;
   const maxCount = req.body.maxCount;
 
-  const response = await getRecords(startDate, endDate, minCount, maxCount);
+  const response = await getRecordsWithFilters(startDate, endDate, minCount, maxCount);
 
   res.send(response);
 });

@@ -1,7 +1,8 @@
 const dayjs = require("dayjs");
+const { APIerror, APIsuccess } = require("../helpers/api-response.js");
 const Record = require("../models/record.model.js");
 
-async function getRecords(startDate, endDate, minCount, maxCount) {
+async function getRecordsWithFilters(startDate, endDate, minCount, maxCount) {
   try {
     const data = await Record.aggregate(
       [
@@ -34,19 +35,12 @@ async function getRecords(startDate, endDate, minCount, maxCount) {
       ]
     );
 
-    return {
-      code: 0,
-      msg: 'Success',
-      records: data,
-    };
+    return APIsuccess(0, 'Success', data);
   } catch (err) {
-    return {
-      code: 500,
-      msg: err.message || "Some error occurred while retrieving records.",
-    };
+    return APIerror(500, err.message || "Some error occurred while retrieving records.");
   }
 }
 
 module.exports = {
-  getRecords,
+  getRecordsWithFilters,
 }
