@@ -11,8 +11,8 @@ module.exports.connect = async () => {
   const mongoUri = mongod.getUri();
   
   await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   });
 }
 
