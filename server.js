@@ -14,7 +14,9 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-connectDb();
+if (process.env.NODE_ENV !== 'test') {
+  connectDb();
+}
 
 // Send message for default URL
 app.get('/', (req, res) => res.send("Welcome!"));
@@ -26,3 +28,5 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
+module.exports = app;
