@@ -43,7 +43,7 @@ describe("getFilteredRecords service", () => {
     expect(dayjs(response.records[0].createdAt).format("YYYY-MM-DD")).toBe(createdAt);
   });
 
-  it("should filter records by startDate and endDate even if there is no any count one", async () => {
+  it("should get records filtered by startDate and endDate even if there is no any count one", async () => {
     const createdAt = "2021-02-03";
     await Record.create({
       key: "key2",
@@ -61,10 +61,10 @@ describe("getFilteredRecords service", () => {
     expect(response.records.length).toBe(0);
   });
 
-  it("should filter records by minCount and maxCount even if there is no any date one", async () => {
+  it("should get records filtered by minCount and maxCount even if there is no any date one", async () => {
     const createdAt = "2021-02-03";
     await Record.create({
-      key: "key2",
+      key: "key3",
       createdAt: dayjs(createdAt).toDate(),
       counts: [30, 20],
     });
@@ -72,6 +72,19 @@ describe("getFilteredRecords service", () => {
       minCount: 10,
       maxCount: 60,
     });
+
+    expect(response.msg).toBe("Success");
+    expect(response.records.length).toBe(1);
+  });
+
+  it("should get all records even if there is no any filter", async () => {
+    const createdAt = "2021-02-03";
+    await Record.create({
+      key: "key4",
+      createdAt: dayjs(createdAt).toDate(),
+      counts: [30, 20],
+    });
+    const response = await getFilteredRecords({});
 
     expect(response.msg).toBe("Success");
     expect(response.records.length).toBe(1);
