@@ -92,7 +92,7 @@ describe("getFilteredRecords service", () => {
 });
 
 describe("POST /api/records", () => {
-  test("if startDate or endDate isn't Date, 400 code should be retured.", done => {
+  test("if startDate or endDate isn't Date, 400 code should be retured.", async () => {
     const startDate = dayjs("hello").toDate();
     const endDate = dayjs("2021-02-03").toDate();
     const data = {
@@ -102,18 +102,16 @@ describe("POST /api/records", () => {
       maxCount: 100,
     };
 
-    request(app)
+    const response = await request(app)
       .post("/api/records")
-      .send(data)
-      .then(async (response) => {
-        expect(response.body.code).toBe(400);
-        // "startDate" must be a valid date
-        expect(response.body.msg.indexOf('startDate') !== -1).toBeTruthy();
-        done();
-      });
+      .send(data);
+
+    expect(response.body.code).toBe(400);
+    // "startDate" must be a valid date
+    expect(response.body.msg.indexOf('startDate') !== -1).toBeTruthy();
   });
 
-  test("if minCount or maxCount isn't number, 400 code should be retured.", done => {
+  test("if minCount or maxCount isn't number, 400 code should be retured.", async () => {
     const startDate = dayjs("2021-01-01").toDate();
     const endDate = dayjs("2021-02-03").toDate();
     const data = {
@@ -123,18 +121,16 @@ describe("POST /api/records", () => {
       maxCount: 100,
     };
 
-    request(app)
+    const response = await request(app)
       .post("/api/records")
-      .send(data)
-      .then(async (response) => {
-        expect(response.body.code).toBe(400);
-        // "minCount" must be a number
-        expect(response.body.msg.indexOf('minCount') !== -1).toBeTruthy();
-        done();
-      });
+      .send(data);
+
+    expect(response.body.code).toBe(400);
+    // "minCount" must be a number
+    expect(response.body.msg.indexOf('minCount') !== -1).toBeTruthy();
   });
 
-  test("if the types of startDate, endDate, minCount, and maxCount are correct, success response should be returned with 0 code.", done => {
+  test("if the types of startDate, endDate, minCount, and maxCount are correct, success response should be returned with 0 code.", async () => {
     const startDate = dayjs("2021-01-01").toDate();
     const endDate = dayjs("2021-02-03").toDate();
     const data = {
@@ -144,18 +140,32 @@ describe("POST /api/records", () => {
       maxCount: 100,
     };
 
-    request(app)
+    const response = await request(app)
       .post("/api/records")
-      .send(data)
-      .then(async (response) => {
-        expect(response.body.code).toBe(0);
-        expect(response.body.msg).toBe("Success");
-        done();
-      });
+      .send(data);
+
+    expect(response.body.code).toBe(0);
+    expect(response.body.msg).toBe("Success");
   });
 
+  test("even if there is no any filter, success response should be retured.", async () => {
+    const createdAt = "2021-02-03";
+    await Record.create({
+      key: "key5",
+      createdAt: dayjs(createdAt).toDate(),
+      counts: [30, 20],
+    });
 
-  test("If wrong api is called, 404 code should be retured.", done => {
+    const response = await request(app)
+      .post("/api/records")
+      .send(null);
+
+    expect(response.body.code).toBe(0);
+    expect(response.body.msg).toBe("Success");
+    expect(response.body.records.length).toBe(1);
+  });
+
+  test("if wrong api is called, 404 code should be retured.", async () => {
     const startDate = dayjs("2021-01-01").toDate();
     const endDate = dayjs("2021-02-03").toDate();
     const data = {
@@ -165,12 +175,10 @@ describe("POST /api/records", () => {
       maxCount: 100,
     };
 
-    request(app)
+    const response = await request(app)
       .post("/api/records1")
-      .send(data)
-      .then(async (response) => {
-        expect(response.body.code).toBe(404);
-        done();
-      });
+      .send(data);
+
+    expect(response.body.code).toBe(404);
   });
 });
