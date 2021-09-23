@@ -4,9 +4,10 @@ const cors = require("cors");
 // Initialize the app
 const app = express();
 
-const connectDb = require("./config/db");
+const connectDb = require("./databases");
 // Import routes
-let { record } = require("./routes");
+let { recordRoute } = require("./routes");
+const { APIerror } = require("./helpers/api-response");
 
 app.use(cors());
 // parse requests of content-type - application/json
@@ -21,7 +22,17 @@ if (process.env.NODE_ENV !== 'test') {
 // Send message for default URL
 app.get('/', (req, res) => res.send("Welcome!"));
 
-app.use("/api/records", record);
+app.use("/api/records", recordRoute);
+
+app.use((req, res, next) => {
+  const error = new Error("Not found API");
+  error.status = 404;
+  next(error);
+});
+
+app.use(function(err, req, res, next) {
+  res.send(APIerror(err.status || 500, err.message || "Unknown API Error"));
+});
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

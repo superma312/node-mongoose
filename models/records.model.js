@@ -9,6 +9,6 @@ const recordSchema = mongoose.Schema({
   counts: [Number]
 });
 
-const Record = mongoose.model("record", recordSchema);
+const RecordModel = mongoose.model("record", recordSchema);
 
-module.exports = Record;
+module.exports = RecordModel;

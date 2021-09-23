@@ -1,46 +1,36 @@
-const dayjs = require("dayjs");
-const { APIerror, APIsuccess } = require("../helpers/api-response.js");
-const Record = require("../models/record.model.js");
+const joi = require("joi");
+const { APIerror } = require("../helpers/api-response");
+const { getRecordsWithFilters: getRecordsWithFiltersService } = require("../services/records.service");
 
-async function getRecordsWithFilters(startDate, endDate, minCount, maxCount) {
+const getRecordsSchema = joi.object({
+  startDate: joi.date().required(),
+  endDate: joi.date().required(),
+  minCount: joi.number().integer().required(),
+  maxCount: joi.number().integer().required(),
+});
+
+const getRecordsWithFilters = async (req, res, next) => {
   try {
-    const data = await Record.aggregate(
-      [
-        {
-          $match: {
-            createdAt: {
-              $gte: dayjs(startDate).toDate(),
-              $lte: dayjs(endDate).toDate(),
-            }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            key: 1,
-            createdAt: 1,
-            totalCount: {
-              $sum: "$counts"  
-            },
-          }
-        },
-        {
-          $match: {
-            totalCount: {
-              $gte: Number(minCount),
-              $lte: Number(maxCount),
-            }
-          }
-        }
-      ]
-    );
+    // validate request payload
+    const { error } = getRecordsSchema.validate(req.body);
 
-    return APIsuccess(0, 'Success', data);
-  } catch (err) {
-    return APIerror(500, err.message || "Some error occurred while retrieving records.");
+    if (error) {
+      return res.send(APIerror(400, `Bad Request: ${error.message}`));
+    }
+
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+    const minCount = req.body.minCount;
+    const maxCount = req.body.maxCount;
+
+    const response = await getRecordsWithFiltersService(startDate, endDate, minCount, maxCount);
+
+    res.send(response);
+  } catch (error) {
+    next(error);
   }
 }
 
 module.exports = {
-  getRecordsWithFilters,
-}
+  getRecordsWithFilters
+};

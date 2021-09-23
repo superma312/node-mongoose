@@ -1,5 +1,5 @@
-const record = require("./record.routes");
+const recordRoute = require("./record.routes");
 
 module.exports = {
-  record
+  recordRoute
 }

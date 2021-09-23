@@ -2,9 +2,9 @@
 const dayjs = require("dayjs");
 const request = require("supertest");
 const dbHandler = require("./db-handler");
-const Record = require("../models/record.model.js");
-const { getRecordsWithFilters } = require("../controllers/record.controller");
+const Record = require("../models/records.model");
 const app = require('../server');
+const { getRecordsWithFilters } = require("../services/records.service");
 
 /**
  * Connect to a new in-memory database before running any tests.
@@ -21,7 +21,7 @@ afterEach(async () => await dbHandler.clearDatabase());
  */
 afterAll(async () => await dbHandler.closeDatabase());
 
-describe("getRecordsWithFilters controller", () => {
+describe("getRecordsWithFilters service", () => {
   it("should get all records filtered by startDate, endDate, minCount, and maxCount", async () => {
     const createdAt = "2021-02-02";
     await Record.create({
@@ -99,6 +99,8 @@ describe("POST /api/records", () => {
       .send(data)
       .then(async (response) => {
         expect(response.body.code).toBe(400);
+        // "startDate" must be a valid date
+        expect(response.body.msg.indexOf('startDate') !== -1).toBeTruthy();
         done();
       });
   });
@@ -118,11 +120,13 @@ describe("POST /api/records", () => {
       .send(data)
       .then(async (response) => {
         expect(response.body.code).toBe(400);
+        // "minCount" must be a number
+        expect(response.body.msg.indexOf('minCount') !== -1).toBeTruthy();
         done();
       });
   });
 
-  test("if the types of startDate, endDate, minCount, and maxCount are correct, success response will be returned with 0 code.", done => {
+  test("if the types of startDate, endDate, minCount, and maxCount are correct, success response should be returned with 0 code.", done => {
     const startDate = dayjs("2021-01-01").toDate();
     const endDate = dayjs("2021-02-03").toDate();
     const data = {
@@ -138,6 +142,26 @@ describe("POST /api/records", () => {
       .then(async (response) => {
         expect(response.body.code).toBe(0);
         expect(response.body.msg).toBe("Success");
+        done();
+      });
+  });
+
+
+  test("If wrong api is called, 404 code should be retured.", done => {
+    const startDate = dayjs("2021-01-01").toDate();
+    const endDate = dayjs("2021-02-03").toDate();
+    const data = {
+      startDate,
+      endDate,
+      minCount: 0,
+      maxCount: 100,
+    };
+
+    request(app)
+      .post("/api/records1")
+      .send(data)
+      .then(async (response) => {
+        expect(response.body.code).toBe(404);
         done();
       });
   });
