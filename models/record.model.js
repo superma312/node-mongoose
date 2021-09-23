@@ -1,24 +1,14 @@
-module.exports = mongoose => {
-  const schema = mongoose.Schema(
-    {
-      key: String,
-      createdAt: Date,
-      counts: [Number]
-    }, {
-      toObject: {
-        transform: function (doc, ret) {
-          delete ret._id;
-        }
-      },
-      toJSON: {
-        transform: function (doc, ret) {
-          delete ret._id;
-        }
-      }
-    }
-  );
+const mongoose = require("mongoose");
 
-  const Record = mongoose.model("record", schema);
+/**
+ * Record model schema.
+ */
+const recordSchema = mongoose.Schema({
+  key: String,
+  createdAt: Date,
+  counts: [Number]
+});
 
-  return Record;
-};
+const Record = mongoose.model("record", recordSchema);
+
+module.exports = Record;

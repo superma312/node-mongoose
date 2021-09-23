@@ -1,31 +1,25 @@
+// Import express
 const express = require("express");
 const cors = require("cors");
+// Initialize the app
 const app = express();
 
-app.use(cors());
+const connectDb = require("./config/db");
+// Import routes
+let { record } = require("./routes");
 
+app.use(cors());
 // parse requests of content-type - application/json
 app.use(express.json());
-
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-const db = require("./models");
+connectDb();
 
-db.mongoose
-  .connect(db.url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    console.log("Connected to the database!");
-  })
-  .catch(err => {
-    console.log("Cannot connect to the database!", err);
-    process.exit();
-  });
+// Send message for default URL
+app.get('/', (req, res) => res.send("Welcome!"));
 
-require("./routes/record.routes")(app);
+app.use("/api/records", record);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

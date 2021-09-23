@@ -1,31 +1,7 @@
 const dayjs = require("dayjs");
-const joi = require("joi");
-const db = require("../models");
+const Record = require("../models/record.model.js");
 
-const Record = db.records;
-
-const findAllSchema = joi.object({
-  startDate: joi.date().required(),
-  endDate: joi.date().required(),
-  minCount: joi.number().integer().required(),
-  maxCount: joi.number().integer().required(),
-});
-
-exports.findAll = async (req, res) => {
-  const { error } = findAllSchema.validate(req.body);
-
-  if (error) {
-    return res.send({
-      code: 400,
-      msg: `Bad Request: ${error.message}`,
-    });
-  }
-
-  const startDate = req.body.startDate;
-  const endDate = req.body.endDate;
-  const minCount = req.body.minCount;
-  const maxCount = req.body.maxCount;
-
+async function getRecords(startDate, endDate, minCount, maxCount) {
   try {
     const data = await Record.aggregate(
       [
@@ -57,16 +33,20 @@ exports.findAll = async (req, res) => {
         }
       ]
     );
-  
-    res.send({
+
+    return {
       code: 0,
       msg: 'Success',
       records: data,
-    });
+    };
   } catch (err) {
-    res.send({
+    return {
       code: 500,
       msg: err.message || "Some error occurred while retrieving records.",
-    });
+    };
   }
-};
+}
+
+module.exports = {
+  getRecords,
+}
