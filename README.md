@@ -11,7 +11,7 @@ Here is a [demo API](https://getir-node-mongoose.herokuapp.com/api/records).
 
 ## Installation
 
-Create a .env and set MONGO_URI variable with your MongoDB URI.
+Create a .env in root directory and set MONGO_URI variable with your MongoDB URI.
 
 ```sh
 $ git clone https://github.com/superma312/node-mongoose.git my-project
