@@ -7,7 +7,7 @@ Here is a [demo API](https://getir-node-mongoose.herokuapp.com/api/records).
 - MongoDB connection with Mongoose
 - Joi for API request validation
 - dayjs for handling dates
-- Jest with mongodb-memory-server for testing
+- Jest with mongodb-memory-server and supertest for testing
 
 ## Installation
 
