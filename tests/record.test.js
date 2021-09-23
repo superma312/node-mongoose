@@ -4,7 +4,7 @@ const request = require("supertest");
 const dbHandler = require("./db-handler");
 const Record = require("../models/records.model");
 const app = require('../server');
-const { getRecordsWithFilters } = require("../services/records.service");
+const { getFilteredRecords } = require("../services/records.service");
 
 /**
  * Connect to a new in-memory database before running any tests.
@@ -21,24 +21,30 @@ afterEach(async () => await dbHandler.clearDatabase());
  */
 afterAll(async () => await dbHandler.closeDatabase());
 
-describe("getRecordsWithFilters service", () => {
-  it("should get all records filtered by startDate, endDate, minCount, and maxCount", async () => {
-    const createdAt = "2021-02-02";
+describe("getFilteredRecords service", () => {
+  it("should get records filtered by startDate, endDate, minCount, and maxCount", async () => {
+    const createdAt = "2021-02-03";
     await Record.create({
       key: "key1",
       createdAt: dayjs(createdAt).toDate(),
       counts: [10],
     });
     const startDate = dayjs("2021-02-01").toDate();
-    const endDate = dayjs("2021-02-03").toDate();
-    const response = await getRecordsWithFilters(startDate, endDate, 0, 20);
+    const endDate = dayjs("2021-02-05").toDate();
+    const response = await getFilteredRecords({
+      startDate,
+      endDate,
+      minCount: 0,
+      maxCount: 20,
+    });
+
     expect(response.msg).toBe("Success");
     expect(response.records.length).toBe(1);
     expect(dayjs(response.records[0].createdAt).format("YYYY-MM-DD")).toBe(createdAt);
   });
 
-  it("should filter records by startDate and endDate", async () => {
-    const createdAt = "2021-02-02";
+  it("should filter records by startDate and endDate even if there is no any count one", async () => {
+    const createdAt = "2021-02-03";
     await Record.create({
       key: "key2",
       createdAt: dayjs(createdAt).toDate(),
@@ -46,44 +52,33 @@ describe("getRecordsWithFilters service", () => {
     });
     const startDate = dayjs("2021-01-01").toDate();
     const endDate = dayjs("2021-02-01").toDate();
-    const response = await getRecordsWithFilters(startDate, endDate, 0, 70);
+    const response = await getFilteredRecords({
+      startDate,
+      endDate,
+    });
+
     expect(response.msg).toBe("Success");
     expect(response.records.length).toBe(0);
   });
 
-  it("should filter records by minCount and maxCount", async () => {
-    const createdAt = "2021-02-02";
+  it("should filter records by minCount and maxCount even if there is no any date one", async () => {
+    const createdAt = "2021-02-03";
     await Record.create({
-      key: "key3",
+      key: "key2",
       createdAt: dayjs(createdAt).toDate(),
       counts: [30, 20],
     });
-    const startDate = dayjs("2021-01-01").toDate();
-    const endDate = dayjs("2021-02-03").toDate();
-    const response = await getRecordsWithFilters(startDate, endDate, 20, 30);
+    const response = await getFilteredRecords({
+      minCount: 10,
+      maxCount: 60,
+    });
+
     expect(response.msg).toBe("Success");
-    expect(response.records.length).toBe(0);
+    expect(response.records.length).toBe(1);
   });
 });
 
 describe("POST /api/records", () => {
-  test("if one of startDate, endDate, minCount, and maxCount is missed, 400 code should be retured.", done => {
-    const startDate = dayjs("2021-01-01").toDate();
-    const endDate = dayjs("2021-02-03").toDate();
-    const data = {
-      startDate,
-      endDate,
-    };
-
-    request(app)
-      .post("/api/records")
-      .send(data)
-      .then(async (response) => {
-        expect(response.body.code).toBe(400);
-        done();
-      });
-  });
-
   test("if startDate or endDate isn't Date, 400 code should be retured.", done => {
     const startDate = dayjs("hello").toDate();
     const endDate = dayjs("2021-02-03").toDate();

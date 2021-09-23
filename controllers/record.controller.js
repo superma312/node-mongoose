@@ -1,15 +1,15 @@
 const joi = require("joi");
 const { APIerror } = require("../helpers/api-response");
-const { getRecordsWithFilters: getRecordsWithFiltersService } = require("../services/records.service");
+const recordService = require("../services/records.service");
 
 const getRecordsSchema = joi.object({
-  startDate: joi.date().required(),
-  endDate: joi.date().required(),
-  minCount: joi.number().integer().required(),
-  maxCount: joi.number().integer().required(),
+  startDate: joi.date(),
+  endDate: joi.date(),
+  minCount: joi.number().integer(),
+  maxCount: joi.number().integer(),
 });
 
-const getRecordsWithFilters = async (req, res, next) => {
+const getFilteredRecords = async (req, res, next) => {
   try {
     // validate request payload
     const { error } = getRecordsSchema.validate(req.body);
@@ -18,12 +18,7 @@ const getRecordsWithFilters = async (req, res, next) => {
       return res.send(APIerror(400, `Bad Request: ${error.message}`));
     }
 
-    const startDate = req.body.startDate;
-    const endDate = req.body.endDate;
-    const minCount = req.body.minCount;
-    const maxCount = req.body.maxCount;
-
-    const response = await getRecordsWithFiltersService(startDate, endDate, minCount, maxCount);
+    const response = await recordService.getFilteredRecords(req.body);
 
     res.send(response);
   } catch (error) {
@@ -32,5 +27,5 @@ const getRecordsWithFilters = async (req, res, next) => {
 }
 
 module.exports = {
-  getRecordsWithFilters
+  getFilteredRecords
 };

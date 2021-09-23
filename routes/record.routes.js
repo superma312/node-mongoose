@@ -1,8 +1,8 @@
 // Initialize express router
 const express = require("express");
-const { getRecordsWithFilters } = require("../controllers/record.controller");
+const { getFilteredRecords } = require("../controllers/record.controller");
 const router = express.Router();
 
-router.post("/", getRecordsWithFilters);
+router.post("/", getFilteredRecords);
 
 module.exports = router;
